@@ -1,29 +1,17 @@
 from __future__ import division
 import ROOT
-from hep_plt.CMSlumi import CMS_lumi, set_CMS_lumi, CMS_Energy
+#from hep_plt.CMSlumi import CMS_lumi, set_CMS_lumi, CMS_Energy
 from ROOT import *
 import re
 from array import array
 from math import sin
 
 import csv
-# inputfile = 'RSG75.csv'
-# inputfile = 'RSG125.csv'
 inputfile = 'RSG75_AN.csv'
-#inputfile = 'RSG125_AN.csv'
-#inputfile = 'RSGdefault.csv'
 
-inputfile = 'hh125goodAN.csv'
-#inputfile = 'hh75goodAN.csv'
-#inputfile = 'hh75tAN.csv'
-#inputfile = 'hh75AN.csv'
-#inputfile = 'hh125AN.csv'
-#inputfile = 'hhcheckAN.csv'
-#inputfile = 'hhdefault.csv'
-
-# --- FUNCTION DEFINITIONS 
-# have to use a dict for the MC_total 
-MC_total_dict = {750: 100000,
+# --- FUNCTION DEFINITIONS
+# have to use a dict for the MC_total
+MC_tot_kMpl01 = {750: 100000,
                  1250: 98000,
                  1500: 96000,
                  2500: 99000,
@@ -38,8 +26,33 @@ MC_total_dict = {750: 100000,
                  7000: 95002,
                  }
 
+MC_tot_kMpl02 = {750: 100000,
+                 1000: 100000,
+                 1250: 97000,
+                 1750: 100000,
+                 2000: 100000,
+                 2250: 100000,
+                 2500: 98000,
+                 3500: 100000,
+                 5000: 100000,
+                 5500: 100000,
+                 5750: 100000,
+                 6500: 100000,
+                 7000: 96752,
+                 8000: 10000,
+                 }
+
+MC_totals_dict = { 'kMpl01': MC_tot_kMpl01,
+                   'kMpl02' : MC_tot_kMpl02
+                 }
+
 def readCSV_eff(inputfile):
 	M, isGood_frac, Ntotal, NisEBEB, NisbEorEb, MC_total = [], [], [], [], [], []
+	pattern = "rsg_([^(]*)_"
+        width = re.findall(pattern, inputfile)[0]
+        print width
+        MC_total_dict = MC_totals_dict[width]
+
 	with open(inputfile, mode='r') as infile:
 	    csv_file = csv.DictReader(infile)
 	    row_num = 0
@@ -51,9 +64,10 @@ def readCSV_eff(inputfile):
 		nEEEE = line['nEEEE']
 		npTcut = line['npTcut']
 		#pattern = "GluGluSpin0ToGammaGamma_W_1p4_M_([^(]*)"
-	        pattern = "RSGravitonToGammaGamma_kMpl01_M_([^(]*)"
-		
-		print nEBEEorEEEB
+	        # pattern = "RSGravitonToGammaGamma_kMpl01_M_([^(]*)"
+                pattern = "M_([^(]*)"
+
+		#print nEBEEorEEEB
 		match = re.findall(pattern, dset)
 		mass = int(match[0])
 		M.append(mass)
@@ -62,8 +76,8 @@ def readCSV_eff(inputfile):
 		NisEBEB.append(int(nEBEB))
 		NisbEorEb.append(int(nEBEEorEEEB))
 		MC_total.append(MC_total_dict[mass])
-	
-	print NisbEorEb
+
+	#print NisbEorEb
 
 	efficiency_isEBEB = array( 'd' )
 	efficiency_isbEorEb = array( 'd')
@@ -103,7 +117,7 @@ def readCSV_eff(inputfile):
 	    etotal.append(e_total_dict[mpt])
 	    mass.append(mpt)
 
-	return mass, e_barrel, e_EBorBE, etotal
+	return mass, e_barrel, e_EBorBE, etotal, width
 
 def createTGraph(N, m, e, color, linestyl):
 	umin, umax = 0, 0.70
@@ -128,12 +142,14 @@ def createTGraph(N, m, e, color, linestyl):
 
 # --- PROGRAM START ---
 
-in1 = 'rsg_75.csv'
-in2 = 'rsg_125.csv'
+# in1 = 'rsg_kMpl01_75.csv'
+# in2 = 'rsg_kMpl01_125.csv'
 #in2 = 'LOG.csv'
+in1 = 'rsg_kMpl02_75.csv'
+in2 = 'rsg_kMpl02_125.csv'
 
-mass, e_barrel, e_EBorBE, etotal = readCSV_eff( in1 )
-mass125, e125_barrel, e125_EBorBE, e125total = readCSV_eff( in2 ) 
+mass, e_barrel, e_EBorBE, etotal, width = readCSV_eff( in1 )
+mass125, e125_barrel, e125_EBorBE, e125total, width = readCSV_eff( in2 )
 
 print e_barrel
 print e125_barrel
@@ -151,14 +167,14 @@ pad3_b = ROOT.TPad("pad3_b", "", 0, 0, 1, 1)
 pad2.SetFillStyle(4000) # Make Transparent pad
 pad2.SetFrameFillStyle(0)
 pad3.SetFillStyle(4000) # Make Transparent pad
-pad3.SetFrameFillStyle(0) 
+pad3.SetFrameFillStyle(0)
 pad1_b.SetFillStyle(4000) # Make Transparent pad
 pad1_b.SetFrameFillStyle(0)
 pad2_b.SetFillStyle(4000) # Make Transparent pad
 pad2_b.SetFrameFillStyle(0)
 pad3_b.SetFillStyle(4000) # Make Transparent pad
 pad3_b.SetFrameFillStyle(0)
- 
+
 #mg = ROOT.TMultiGraph()
 
 n = len(mass)
@@ -172,13 +188,13 @@ print "EEEE"
 print e_EBorBE
 print e125_EBorBE
 
-gr = createTGraph(n, mass, e_barrel, 2, linestyl=2) 
-gr_eb = createTGraph(n, mass, e_EBorBE, 4, linestyl=2) 
-gr_t = createTGraph(n, mass, etotal, 1, linestyl=2) 
+gr = createTGraph(n, mass, e_barrel, 2, linestyl=2)
+gr_eb = createTGraph(n, mass, e_EBorBE, 4, linestyl=2)
+gr_t = createTGraph(n, mass, etotal, 1, linestyl=2)
 
-gr125 = createTGraph(n125, mass125, e125_barrel, 2, linestyl=1) 
-gr_eb125 = createTGraph(n125, mass125, e125_EBorBE, 4, 1) 
-gr_t125 = createTGraph(n125, mass125, e125total, 1, 1 ) 
+gr125 = createTGraph(n125, mass125, e125_barrel, 2, linestyl=1)
+gr_eb125 = createTGraph(n125, mass125, e125_EBorBE, 4, 1)
+gr_t125 = createTGraph(n125, mass125, e125total, 1, 1 )
 
 # Multipad solution
 pad1.Draw()
@@ -208,20 +224,23 @@ leg.SetFillColor(0)
 leg.SetFillStyle(0)
 leg.SetTextFont(42)
 leg.SetTextSize(0.035)
-leg.SetHeader(r"#tilde{#kappa} = 0.01")
+widthnum = width.replace("kMpl", "0").replace("00", "0.0")
+print "width", widthnum
 #leg.SetHeader(r"#frac{#Gamma_{x}}{m_{x}} = 0.01")
+#leg.SetHeader(r"#tilde{#kappa} = 0.01")
+leg.SetHeader(r"#tilde{#kappa} = %s" %(widthnum))
 
-leg.AddEntry(gr, "EBEB", "l")
-leg.AddEntry(gr_eb, "EBEE", "l")
-leg.AddEntry(gr_t, "Total", "l")
-leg.AddEntry(gr125, "EBEB_125", "l")
-leg.AddEntry(gr_eb125, "EBEE_125", "l")
-leg.AddEntry(gr_t125, "Total_125", "l")
+leg.AddEntry(gr, "EBEB pT75", "l")
+leg.AddEntry(gr_eb, "EBEE pT75", "l")
+leg.AddEntry(gr_t, "Total pT75", "l")
+leg.AddEntry(gr125, "EBEB pT125 ", "l")
+leg.AddEntry(gr_eb125, "EBEE pT125", "l")
+leg.AddEntry(gr_t125, "Total pT125", "l")
 
 leg.Draw()
 
 # set_CMS_lumi(c1, 4, 0, 137)
-CMS_Energy(c1, 0, E="13 TeV")
+#CMS_Energy(c1, 0, E="13 TeV")
 c1.Update()
 #c1.GetFrame().SetFillColor(21)
 #c1.GetFrame().SetBorderSize(12)
@@ -229,4 +248,4 @@ c1.Modified()
 c1.Update()
 c1.Draw()
 
-c1.SaveAs("rsg_efficiency.pdf" )
+c1.SaveAs("rsg_efficiency%s.pdf" %(width) )
