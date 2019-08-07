@@ -11,6 +11,19 @@ inputfile = 'RSG75_AN.csv'
 
 # --- FUNCTION DEFINITIONS
 # have to use a dict for the MC_total
+MC_tot_kMpl001 = {750: 100000,
+                 1250: 100000,
+                 1500: 100000,
+                 1750: 100000,
+                 2000: 100000,
+                 2250: 100000,
+                 2500: 100000,
+                 2750: 100000,
+                 3000: 100000,
+                 3250: 96000,
+                 3500: 100000,
+                 5000: 99000,
+                 }
 MC_tot_kMpl01 = {750: 100000,
                  1250: 98000,
                  1500: 96000,
@@ -42,7 +55,8 @@ MC_tot_kMpl02 = {750: 100000,
                  8000: 10000,
                  }
 
-MC_totals_dict = { 'kMpl01': MC_tot_kMpl01,
+MC_totals_dict = { 'kMpl001': MC_tot_kMpl001,
+                   'kMpl01': MC_tot_kMpl01,
                    'kMpl02' : MC_tot_kMpl02
                  }
 
@@ -142,11 +156,13 @@ def createTGraph(N, m, e, color, linestyl):
 
 # --- PROGRAM START ---
 
-# in1 = 'rsg_kMpl01_75.csv'
-# in2 = 'rsg_kMpl01_125.csv'
+in1 = 'rsg_kMpl01_75.csv'
+in2 = 'rsg_kMpl01_125.csv'
 #in2 = 'LOG.csv'
-in1 = 'rsg_kMpl02_75.csv'
-in2 = 'rsg_kMpl02_125.csv'
+# in1 = 'rsg_kMpl02_75.csv'
+# in2 = 'rsg_kMpl02_125.csv'
+# in1 = 'rsg_kMpl001_75.csv'
+# in2 = 'rsg_kMpl001_125.csv'
 
 mass, e_barrel, e_EBorBE, etotal, width = readCSV_eff( in1 )
 mass125, e125_barrel, e125_EBorBE, e125total, width = readCSV_eff( in2 )
